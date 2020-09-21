@@ -33,8 +33,6 @@ ils mangent
 ```
 
 
-
-
 - Générer un tableau de conjugaison pour un seul verbe:
 
 ```
@@ -58,3 +56,10 @@ python3 conjugue_moi.py manger
 | nous mangeons | nous mangions | nous mangerons | nous mangeâmes | nous mangerions |
 | vous mangez | vous mangiez | vous mangerez | vous mangeâtes | vous mangeriez |
 | ils mangent | ils mangeaient | ils mangeront | ils mangèrent | ils mangeraient |
+
+
+## A faire
+
+- terminer la conjugaison des verbes du 3ème groupe
+- gérer les verbes pronominaux
+- ajouter l'impératif
