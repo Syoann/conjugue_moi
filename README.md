@@ -41,27 +41,20 @@ ils mangent
 python3 conjugue_moi.py manger
 ```
 ```
-| Présent |
-| --- |
-| je mange |
-| tu manges |
-| il mange |
-| elle mange |
-| on mange |
-| nous mangeons |
-| vous mangez |
-| ils mangent |
-| elles mangent |
+| Présent | Imparfait | Futur | Passé simple | Conditionnel |
+| --- | --- | --- | --- | --- |
+| je mange | je mangeais | je mangerai | je mangeai | je mangerais |
+| tu manges | tu mangeais | tu mangeras | tu mangeais | tu mangerais |
+| il mange | il mangeait | il mangera | il mangea | il mangerait |
+| nous mangeons | nous mangions | nous mangerons | nous mangeâmes | nous mangerions |
+| vous mangez | vous mangiez | vous mangerez | vous mangeâtes | vous mangeriez |
+| ils mangent | ils mangeaient | ils mangeront | ils mangèrent | ils mangeraient |
 ```
-
-| Présent |
-| --- |
-| je mange |
-| tu manges |
-| il mange |
-| elle mange |
-| on mange |
-| nous mangeons |
-| vous mangez |
-| ils mangent |
-| elles mangent |
+| Présent | Imparfait | Futur | Passé simple | Conditionnel |
+| --- | --- | --- | --- | --- |
+| je mange | je mangeais | je mangerai | je mangeai | je mangerais |
+| tu manges | tu mangeais | tu mangeras | tu mangeais | tu mangerais |
+| il mange | il mangeait | il mangera | il mangea | il mangerait |
+| nous mangeons | nous mangions | nous mangerons | nous mangeâmes | nous mangerions |
+| vous mangez | vous mangiez | vous mangerez | vous mangeâtes | vous mangeriez |
+| ils mangent | ils mangeaient | ils mangeront | ils mangèrent | ils mangeraient |
