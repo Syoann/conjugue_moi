@@ -58,6 +58,28 @@ python3 conjugue_moi.py manger
 | ils mangent | ils mangeaient | ils mangeront | ils mangèrent | ils mangeraient |
 
 
+## Notes
+
+Le verbe à conjuguer n'a pas besoin d'exister dans le dictionnaire, le programme se basera sur sa
+terminaison pour le conjuguer.
+
+Exemple:
+
+```bash
+python3 conjugue_moi.py tramontir
+```
+
+| Présent | Imparfait | Futur | Passé simple | Conditionnel |
+| --- | --- | --- | --- | --- |
+| je tramontis | je tramontissais | je tramontirai | je tramontis | je tramontirais |
+| tu tramontis | tu tramontissais | tu tramontiras | tu tramontis | tu tramontirais |
+| il tramontit | il tramontissait | il tramontira | il tramontit | il tramontirait |
+| nous tramontissons | nous tramontissions | nous tramontirons | nous tramontîmes | nous tramontirions |
+| vous tramontissez | vous tramontissiez | vous tramontirez | vous tramontîtes | vous tramontiriez |
+| ils tramontissent | ils tramontissaient | ils tramontiront | ils tramontirent | ils tramontiraient |
+
+
+
 ## A faire
 
 - terminer la conjugaison des verbes du 3ème groupe
