@@ -31,7 +31,7 @@ class Tense:
                         extended_terminations[0] = extended_terminations[0][:-1]+ "é"
 
                     # Ajout de '-t-' si voyelle en fin de verbe
-                    if extended_terminations[2].endswith(tuple("aeiou")):
+                    if extended_terminations[2] is not None and extended_terminations[2].endswith(tuple("aeiou")):
                         pronouns[2:5] = ["t-il", "t-elle", "t-on"]
 
                     # Remplacement des terminaisons "è.é-je" par "e.é-je"
@@ -157,7 +157,6 @@ class IndicatifPresent(Tense):
                            "perdre": ["perds", "perds", "perd", "perdons", "perdez", "perdent"],
                            "plaire": ["plais", "plais", "plaît", "plaisons", "plaisez", "plaisent"],
                            "pleuvoir": [None, None, "pleut", None, None, "pleuvent"],
-                           "poindre": [None, None, "point", None, None, "poignent"],
                            "pondre": ["ponds", "ponds", "pond", "pondons", "pondez", "pondent"],
                            "pouvoir": ["peux", "peux", "peut", "pouvons", "pouvez", "peuvent"],
                            "prendre": ["prends", "prends", "prend", "prenons", "prenez", "prennent"],
@@ -227,6 +226,9 @@ class IndicatifFutur(Tense):
 
     terminations_group2 = {"ir": ["irai", "iras", "ira", "irons", "irez", "iront"],
                            "ïr": ["ïrai", "ïras", "ïra", "ïrons", "ïrez", "ïront"]}
+
+
+
     terminations_group3 = {"e": ["ai", "as", "a", "ons", "ez", "ont"],
                            "": ["ai", "as", "a", "ons", "ez", "ont"],
                            "aller": ["irai", "iras", "ira", "irons", "irez", "iront"],
@@ -242,8 +244,8 @@ class IndicatifFutur(Tense):
                            "gésir": [None, None, None, None, None, None],
                            "mourir": ["mourrai", "mourras", "mourra", "mourrons", "mourrez", "mourront"],
                            "mouvoir": ["mouvrai", "mouvras", "mouvra", "mouvrons", "mouvrez", "mouvront"],
+                           "oindre": ["oindrai", "oindras", "oindra", "oindrons", "oindrez", "oindront"],
                            "pleuvoir": [None, None, "pleuvra", None, None, "pleuvront"],
-                           "poindre": [None, None, "poindra", None, None, "poindront"],
                            "pouvoir": ["pourrai", "pourras", "pourra", "pourrons", "pourrez", "pourront"],
                            "savoir": ["saurai", "sauras", "saura", "saurons", "saurez", "sauront"],
                            "seoir": [None, None, "siéra", None, None, "siéront"],
@@ -263,12 +265,37 @@ class IndicatifImparfait(Tense):
     Imparfait de l'indicatif
     """
 
+    def generate_group3():
+        """
+        Génère automatiquement les terminaisons de l'imparfait des verbes du 3ème groupe à partir
+        de la conjugaison au présent pour la première personne du pluriel.
+        """
+        terminations_imparfait = {}
+
+        # Récupération des terminaisons du présent de l'indicatif
+        for term, conjug in IndicatifPresent.terminations_group3.items():
+            if conjug[3] is None:
+                continue
+
+            # Suppression de '-ons' à la première personne du pluriel pour former le radical
+            radical = conjug[3][:-3]
+
+            # Génération des terminaisons
+            terminations_imparfait[term] = [radical + t for t in ["ais", "ais", "ait", "ions", "iez", "aient"]]
+
+        return terminations_imparfait
+
+
     terminations_group1 = {"er": ["ais", "ais", "ait", "ions", "iez", "aient"],
                            "ger": ["geais", "geais", "geait", "gions", "giez", "geaient"]}
     terminations_group2 = {"ir": ["issais", "issais", "issait", "issions", "issiez", "issaient"],
                            "ïr": ["ïssais", "ïssais", "ïssait", "ïssions", "ïssiez", "ïssaient"]}
-    terminations_group3 = {"avoir": ["avais", "avais", "avait", "avions", "aviez", "avaient"],
-                           "être": ["étais", "étais", "était", "étions", "étiez", "étaient"]}
+
+    terminations_group3 = generate_group3()
+    terminations_group3.update({"être": ["étais", "étais", "était", "étions", "étiez", "étaient"],
+                                "falloir": [None, None, "fallait", None, None, None],
+                                "pleuvoir": [None, None, "pleuvait", None, None, "pleuvaient"],
+                                "seoir": [None, None, "seyait", None, None, "seyaient"]})
 
     terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
 
@@ -350,7 +377,10 @@ if __name__ == "__main__":
             conjug = [result for result in conjugate(verb, tenses[tense])]
 
             for i, index in enumerate([0, 1, 2, 5, 6, 7]):
-                output[i] += f" {conjug[index]} |"
+                try:
+                    output[i] += f" {conjug[index]} |"
+                except:
+                    output[i] += " |"
 
         print(header)
         print(delim)
