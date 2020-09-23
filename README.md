@@ -35,27 +35,29 @@ ils mangent
 
 - Générer un tableau de conjugaison pour un seul verbe:
 
-```
+```bash
 python3 conjugue_moi.py manger
 ```
+
 ```
-| Présent | Imparfait | Futur | Passé simple | Conditionnel |
-| --- | --- | --- | --- | --- |
-| je mange | je mangeais | je mangerai | je mangeai | je mangerais |
-| tu manges | tu mangeais | tu mangeras | tu mangeais | tu mangerais |
-| il mange | il mangeait | il mangera | il mangea | il mangerait |
-| nous mangeons | nous mangions | nous mangerons | nous mangeâmes | nous mangerions |
-| vous mangez | vous mangiez | vous mangerez | vous mangeâtes | vous mangeriez |
-| ils mangent | ils mangeaient | ils mangeront | ils mangèrent | ils mangeraient |
+| Présent              | Imparfait            | Futur                | Passé simple         |
+| -------------------- | -------------------- | -------------------- | -------------------- |
+| je mange             | je mangeais          | je mangerai          | je mangeai           |
+| tu manges            | tu mangeais          | tu mangeras          | tu mangeais          |
+| il mange             | il mangeait          | il mangera           | il mangea            |
+| nous mangeons        | nous mangions        | nous mangerons       | nous mangeâmes       |
+| vous mangez          | vous mangiez         | vous mangerez        | vous mangeâtes       |
+| ils mangent          | ils mangeaient       | ils mangeront        | ils mangèrent        |
 ```
-| Présent | Imparfait | Futur | Passé simple | Conditionnel |
-| --- | --- | --- | --- | --- |
-| je mange | je mangeais | je mangerai | je mangeai | je mangerais |
-| tu manges | tu mangeais | tu mangeras | tu mangeais | tu mangerais |
-| il mange | il mangeait | il mangera | il mangea | il mangerait |
-| nous mangeons | nous mangions | nous mangerons | nous mangeâmes | nous mangerions |
-| vous mangez | vous mangiez | vous mangerez | vous mangeâtes | vous mangeriez |
-| ils mangent | ils mangeaient | ils mangeront | ils mangèrent | ils mangeraient |
+
+| Présent              | Imparfait            | Futur                | Passé simple         |
+| -------------------- | -------------------- | -------------------- | -------------------- |
+| je mange             | je mangeais          | je mangerai          | je mangeai           |
+| tu manges            | tu mangeais          | tu mangeras          | tu mangeais          |
+| il mange             | il mangeait          | il mangera           | il mangea            |
+| nous mangeons        | nous mangions        | nous mangerons       | nous mangeâmes       |
+| vous mangez          | vous mangiez         | vous mangerez        | vous mangeâtes       |
+| ils mangent          | ils mangeaient       | ils mangeront        | ils mangèrent        |
 
 
 ## Notes
@@ -69,14 +71,14 @@ Exemple:
 python3 conjugue_moi.py tramontir
 ```
 
-| Présent | Imparfait | Futur | Passé simple | Conditionnel |
-| --- | --- | --- | --- | --- |
-| je tramontis | je tramontissais | je tramontirai | je tramontis | je tramontirais |
-| tu tramontis | tu tramontissais | tu tramontiras | tu tramontis | tu tramontirais |
-| il tramontit | il tramontissait | il tramontira | il tramontit | il tramontirait |
-| nous tramontissons | nous tramontissions | nous tramontirons | nous tramontîmes | nous tramontirions |
-| vous tramontissez | vous tramontissiez | vous tramontirez | vous tramontîtes | vous tramontiriez |
-| ils tramontissent | ils tramontissaient | ils tramontiront | ils tramontirent | ils tramontiraient |
+| Présent              | Imparfait            | Futur                | Passé simple         |
+| -------------------- | -------------------- | -------------------- | -------------------- |
+| je tramontis         | je tramontissais     | je tramontirai       | je tramontis         |
+| tu tramontis         | tu tramontissais     | tu tramontiras       | tu tramontis         |
+| il tramontit         | il tramontissait     | il tramontira        | il tramontit         |
+| nous tramontissons   | nous tramontissions  | nous tramontirons    | nous tramontîmes     |
+| vous tramontissez    | vous tramontissiez   | vous tramontirez     | vous tramontîtes     |
+| ils tramontissent    | ils tramontissaient  | ils tramontiront     | ils tramontirent     |
 
 
 
