@@ -53,7 +53,7 @@ class Tense:
             if elem == "1ps":
                 # On remplace .....e-je par .....é-je (exemple: demande-je devient demandé-je)
                 if conjug[elem].endswith("e"):
-                    conjug[elem] = conjug[elem][:-1]+ "é"
+                    conjug[elem] = conjug[elem][:-1] + "é"
 
                 # Remplacement des terminaisons "è.é-je" par "e.é-je"
                 # exemple: "pèlé-je" devient "pelé-je"
@@ -67,8 +67,6 @@ class Tense:
                 result.append(f"{conjug[elem]}-{pronoun} ?")
 
         return result
-
-
 
     @classmethod
     def conjugate_simple(cls, verb):
@@ -91,9 +89,6 @@ class Tense:
 
                 result.append(f"{pronoun}{sep_char}{conjug[elem]}")
         return result
-
-
-
 
 
 class IndicatifPresent(Tense):
@@ -127,7 +122,6 @@ class IndicatifPresent(Tense):
                            [rad + "è" + term[-3] + t for t in ["ent"]]
 
         return result
-
 
     terminations_group1 = {"appeler": ["appelle", "appelles", "appelle", "appelons", "appelez", "appellent"],
                            "dire": ["dis", "dis", "dit", "disons", "dites", "disent"],
@@ -240,7 +234,6 @@ class IndicatifPresent(Tense):
                            "voir": ["vois", "vois", "voit", "voyons", "voyez", "voient"],
                            "vouloir": ["veux", "veux", "veut", "voulons", "voulez", "veulent"]}
 
-
     terminations_group1.update(generate_eacute_terms.__func__())
     terminations_group1.update(generate_exceptions_group1.__func__())
 
@@ -263,7 +256,6 @@ class IndicatifFutur(Tense):
             result[term] = [rad + "è" + term[-3] + t for t in ["erai", "eras", "era", "erons", "erez", "eront"]]
         return result
 
-
     terminations_group1 = {"yer": ["ierai", "ieras", "iera", "yerons", "yerez", "ieront"],
                            "er": ["erai", "eras", "era", "erons", "erez", "eront"],
                            "appeler": ["appellerai", "appelleras", "appellera",
@@ -275,8 +267,6 @@ class IndicatifFutur(Tense):
 
     terminations_group2 = {"ir": ["irai", "iras", "ira", "irons", "irez", "iront"],
                            "ïr": ["ïrai", "ïras", "ïra", "ïrons", "ïrez", "ïront"]}
-
-
 
     terminations_group3 = {"e": ["ai", "as", "a", "ons", "ez", "ont"],
                            "": ["ai", "as", "a", "ons", "ez", "ont"],
@@ -305,7 +295,6 @@ class IndicatifFutur(Tense):
                            "venir": ["viendrai", "viendras", "viendra", "viendrons", "viendrez", "viendront"],
                            "voir": ["verrai", "verras", "verra", "verrons", "verrez", "verront"],
                            "vouloir": ["voudrai", "voudras", "voudra", "voudrons", "voudrez", "voudront"]}
-
 
     terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
 
@@ -336,7 +325,6 @@ class IndicatifImparfait(Tense):
 
         return terminations_imparfait
 
-
     terminations_group1 = {"er": ["ais", "ais", "ait", "ions", "iez", "aient"],
                            "ger": ["geais", "geais", "geait", "gions", "giez", "geaient"]}
     terminations_group2 = {"ir": ["issais", "issais", "issait", "issions", "issiez", "issaient"],
@@ -365,7 +353,6 @@ class IndicatifPasseSimple(Tense):
                            "ger": ["geai", "geais", "gea", "geâmes", "geâtes", "gèrent"]}
     terminations_group2 = {"ir": ["is", "is", "it", "îmes", "îtes", "irent"],
                            "ïr": ["ïs", "ïs", "ït", "ïmes", "ïtes", "ïrent"]}
-
 
     _TERMS_A = ["ai", "as", "a", "âmes", "âtes", "èrent"]
     _TERMS_U = ["us", "us", "ut", "ûmes", "ûtes", "urent"]
@@ -433,7 +420,6 @@ class IndicatifPasseSimple(Tense):
                            "voir": generate_terminations_group3.__func__("v", _TERMS_I),
                            "vouloir": generate_terminations_group3.__func__("voul", _TERMS_U)}
 
-
     terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
 
 
@@ -442,14 +428,28 @@ class ConditionnelPresent(Tense):
     Conditionnel présent
     """
 
-    terminations_group1 = {"er": ["erais", "erais", "erait", "erions", "eriez", "eraient"]}
-    terminations_group2 = {"ir": ["irais", "irais", "irait", "irions", "iriez", "iraient"],
-                           "ïr": ["ïrais", "ïrais", "ïrait", "ïrions", "ïriez", "ïraient"]}
-    terminations_group3 = {"avoir": ["aurais", "aurais", "aurait", "aurions", "auriez", "auraient"],
-                           "être": ["serais", "serais", "serait", "serions", "seriez", "seraient"]}
+    @staticmethod
+    def generate_terminations():
+        """
+        Génère automatiquement les terminaisons du conditionnel à partir de la conjugaison au futur
+        de la première personne du pluriel.
+        """
+        terminations_conditionnel = {}
 
-    terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
+        # Récupération des terminaisons du présent de l'indicatif
+        for term, conjug in IndicatifFutur.terminations.items():
+            if conjug[3] is None:
+                continue
 
+            # Suppression de '-ons' à la première personne du pluriel pour former le radical
+            radical = conjug[3][:-3]
+
+            # Génération des terminaisons
+            terminations_conditionnel[term] = [radical + t for t in ["ais", "ais", "ait", "ions", "iez", "aient"]]
+
+        return terminations_conditionnel
+
+    terminations = generate_terminations.__func__()
 
 
 def conjugate(verb, tense, interrogative=False):
@@ -472,8 +472,6 @@ def conjugate(verb, tense, interrogative=False):
         return tense.conjugate_simple(verb)
 
 
-
-
 if __name__ == "__main__":
     import os
     import sys
@@ -483,9 +481,8 @@ if __name__ == "__main__":
     tenses = {"Présent": IndicatifPresent,
               "Imparfait": IndicatifImparfait,
               "Futur": IndicatifFutur,
-              "Passé simple": IndicatifPasseSimple}
-#              "Conditionnel": ConditionnelPresent}
-
+              "Passé simple": IndicatifPasseSimple,
+              "Conditionnel": ConditionnelPresent}
 
     # Fichier en entrée, dictionnaire en sortie
     if os.path.isfile(arg1):
