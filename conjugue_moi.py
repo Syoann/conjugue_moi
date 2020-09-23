@@ -504,17 +504,17 @@ if __name__ == "__main__":
         output = ["|"] * 6
 
         for tense_name, tense in tenses.items():
-            header += f" {tense_name} |"
+            header += f" {tense_name:20} |"
             conjug = conjugate(verb, tense)
 
             for i, pronoun in enumerate([0, 1, 2, 5, 6, 7]):
                 try:
-                    output[i] += f" {conjug[pronoun]} |"
+                    output[i] += f" {conjug[pronoun]:20} |"
                 except IndexError:
                     output[i] += " |"
 
         print(header)
-        print("| --- " * len(tenses) + "|")
+        print(("| " + "-" * 20 + " ") * len(tenses) + "|")
 
         for line in output:
             print(line)
