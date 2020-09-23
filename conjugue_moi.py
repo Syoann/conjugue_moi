@@ -6,50 +6,93 @@ import re
 class Tense:
     """Classe générique d'un temps"""
     terminations = {}
-    pronouns = ["je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles"]
 
+    PRONOUNS = {"1ps": ["je"],
+                "2ps": ["tu"],
+                "3ps": ["il", "elle", "on"],
+                "1pp": ["nous"],
+                "2pp": ["vous"],
+                "3pp": ["ils", "elles"]}
 
     @classmethod
-    def conjugate(cls, verb, interrogative=False):
+    def _conjugate(cls, verb):
         """
         Conjugue n'importe quel verbe dans ce temps.
+        Retourne un dicitonnaire avec seulement le verbe conjugué
         """
+
+        result = dict.fromkeys(cls.PRONOUNS.keys())
 
         # On trie les terminaisons par ordre décroissant de taille afin de matcher le plus
         # précisement possible
         for suffix in sorted(cls.terminations.keys(), key=lambda k: len(k), reverse=True):
             if verb.endswith(suffix):
                 radical = verb[:-len(suffix)]
-                terms = cls.terminations[suffix]
-                extended_terminations = terms[0:2] + [terms[2]] * 3 + terms[3:] + [terms[5]]
-                pronouns = list(cls.pronouns)
 
-                # Forme interrogative
-                if interrogative:
-                    # On remplace .....e-je par .....é-je (exemple: demande-je devient demandé-je)
-                    if extended_terminations[0] is not None and extended_terminations[0].endswith("e"):
-                        extended_terminations[0] = extended_terminations[0][:-1]+ "é"
+                for pronoun, term in zip(cls.PRONOUNS.keys(), cls.terminations[suffix]):
+                    if term is not None:
+                        result[pronoun] = radical + term
 
-                    # Ajout de '-t-' si voyelle en fin de verbe
-                    if extended_terminations[2] is not None and extended_terminations[2].endswith(tuple("aeiou")):
-                        pronouns[2:5] = ["t-il", "t-elle", "t-on"]
+                break
 
-                    # Remplacement des terminaisons "è.é-je" par "e.é-je"
-                    # exemple: "pèlé-je" devient "pelé-je"
-                    base_verbale = [f"{radical}{term}" if term is not None else None for term in extended_terminations]
-                    if base_verbale[0]:
-                        base_verbale[0] = re.sub(r'è(.)é$', r'e\g<1>é', base_verbale[0])
+        return result
 
-                    return([f"{verb}-{pronoun} ?" for pronoun, verb in zip(pronouns, base_verbale) if base_verbale is not None])
-                # Forme classique
-                else:
-                    pronouns = [pronoun + " " for pronoun in pronouns]
-                    # "j'" si le verbe commence par une voyelle
-                    if terms[0] is not None and (radical + terms[0]).startswith(tuple("aeéèêiou")):
-                        pronouns[0] = "j'"
+    @classmethod
+    def conjugate_interrogative(cls, verb):
+        """
+        Conjugue un verbe à la forme interrogative
+        """
 
-                    return [f"{pronoun}{radical}{term}" for pronoun, term in zip(pronouns, extended_terminations) if term is not None]
-        return [None] * 9
+        conjug = cls._conjugate(verb)
+        result = []
+
+        for elem in cls.PRONOUNS:
+            if conjug[elem] is None:
+                continue
+
+            if elem == "1ps":
+                # On remplace .....e-je par .....é-je (exemple: demande-je devient demandé-je)
+                if conjug[elem].endswith("e"):
+                    conjug[elem] = conjug[elem][:-1]+ "é"
+
+                # Remplacement des terminaisons "è.é-je" par "e.é-je"
+                # exemple: "pèlé-je" devient "pelé-je"
+                conjug[elem] = re.sub(r'è(.)é$', r'e\g<1>é', conjug[elem])
+
+            # Ajout de '-t-' avec il/elle et ils/elles si voyelle en fin de verbe
+            if elem in ["3ps", "3pp"] and conjug[elem].endswith("aeiou"):
+                conjug[elem] = conjug[elem] + "-t"
+
+            for pronoun in cls.PRONOUNS[elem]:
+                result.append(f"{conjug[elem]}-{pronoun} ?")
+
+        return result
+
+
+
+    @classmethod
+    def conjugate_simple(cls, verb):
+        """
+        Conjugue un verbe et retourne une liste de pronom + verbe conjugué
+        """
+        conjug = cls._conjugate(verb)
+        result = []
+
+        for elem in cls.PRONOUNS:
+            if conjug[elem] is None:
+                continue
+
+            for pronoun in cls.PRONOUNS[elem]:
+                sep_char = " "
+                # "j'" si le verbe commence par une voyelle
+                if pronoun == "je" and conjug[elem].startswith(tuple("aeéèêiou")):
+                    pronoun = "j'"
+                    sep_char = ""
+
+                result.append(f"{pronoun}{sep_char}{conjug[elem]}")
+        return result
+
+
 
 
 
@@ -314,6 +357,7 @@ class IndicatifPasseSimple(Tense):
     Passé simple
     """
 
+    @staticmethod
     def generate_terminations_group3(radical, terms):
         return [radical + term for term in terms]
 
@@ -330,64 +374,64 @@ class IndicatifPasseSimple(Tense):
 
     terminations_group3 = {"avoir": ["eus", "eus", "eut", "eûmes", "eûtes", "eurent"],
                            "être": ["fus", "fus", "fut", "fûmes", "fûtes", "furent"],
-                           "aller": generate_terminations_group3("all", _TERMS_A),
-                           "asseoir": generate_terminations_group3("ass", _TERMS_I),
-                           "battre": generate_terminations_group3("batt", _TERMS_I),
-                           "boire": generate_terminations_group3("b", _TERMS_U),
-                           "cevoir": generate_terminations_group3("ç", _TERMS_U),
-                           "choir": generate_terminations_group3("ch", _TERMS_U),
-                           "concire": generate_terminations_group3("conc", _TERMS_I),
+                           "aller": generate_terminations_group3.__func__("all", _TERMS_A),
+                           "asseoir": generate_terminations_group3.__func__("ass", _TERMS_I),
+                           "battre": generate_terminations_group3.__func__("batt", _TERMS_I),
+                           "boire": generate_terminations_group3.__func__("b", _TERMS_U),
+                           "cevoir": generate_terminations_group3.__func__("ç", _TERMS_U),
+                           "choir": generate_terminations_group3.__func__("ch", _TERMS_U),
+                           "concire": generate_terminations_group3.__func__("conc", _TERMS_I),
                            "clore": [None, None, None, None, None, None],
-                           "clure": generate_terminations_group3("cl", _TERMS_U),
-                           "confire": generate_terminations_group3("conf", _TERMS_I),
-                           "coudre": generate_terminations_group3("cous", _TERMS_I),
-                           "courir": generate_terminations_group3("cour", _TERMS_U),
-                           "croire": generate_terminations_group3("cr", _TERMS_U),
+                           "clure": generate_terminations_group3.__func__("cl", _TERMS_U),
+                           "confire": generate_terminations_group3.__func__("conf", _TERMS_I),
+                           "coudre": generate_terminations_group3.__func__("cous", _TERMS_I),
+                           "courir": generate_terminations_group3.__func__("cour", _TERMS_U),
+                           "croire": generate_terminations_group3.__func__("cr", _TERMS_U),
                            "croître": ["crûs", "crûs", "crût", "crûmes", "crûtes", "crûrent"],
-                           "devoir": generate_terminations_group3("d", _TERMS_U),
-                           "dre": generate_terminations_group3("d", _TERMS_I),
-                           "écrire": generate_terminations_group3("écriv", _TERMS_I),
-                           "faire": generate_terminations_group3("f", _TERMS_I),
+                           "devoir": generate_terminations_group3.__func__("d", _TERMS_U),
+                           "dre": generate_terminations_group3.__func__("d", _TERMS_I),
+                           "écrire": generate_terminations_group3.__func__("écriv", _TERMS_I),
+                           "faire": generate_terminations_group3.__func__("f", _TERMS_I),
                            "falloir": [None, None, "fallut", None, None, None],
-                           "foutre": generate_terminations_group3("fout", _TERMS_I),
+                           "foutre": generate_terminations_group3.__func__("fout", _TERMS_I),
                            "frire": ["fris", "fris", "frit", None, None, None],
                            "gésir": [None, None, None, None, None, None],
-                           "indre": generate_terminations_group3("ign", _TERMS_I),
-                           "lire": generate_terminations_group3("l", _TERMS_U),
-                           "mettre": generate_terminations_group3("m", _TERMS_I),
-                           "moudre": generate_terminations_group3("moul", _TERMS_U),
-                           "mouvoir": generate_terminations_group3("m", _TERMS_U),
-                           "naître": generate_terminations_group3("naqu", _TERMS_I),
-                           "oindre": generate_terminations_group3("oign", _TERMS_I),
+                           "indre": generate_terminations_group3.__func__("ign", _TERMS_I),
+                           "lire": generate_terminations_group3.__func__("l", _TERMS_U),
+                           "mettre": generate_terminations_group3.__func__("m", _TERMS_I),
+                           "moudre": generate_terminations_group3.__func__("moul", _TERMS_U),
+                           "mouvoir": generate_terminations_group3.__func__("m", _TERMS_U),
+                           "naître": generate_terminations_group3.__func__("naqu", _TERMS_I),
+                           "oindre": generate_terminations_group3.__func__("oign", _TERMS_I),
                            "ouïr": [None, None, None, None, None, None],
                            "paître": [None, None, None, None, None, None],
-                           "paraître": generate_terminations_group3("par", _TERMS_U),
-                           "plaire": generate_terminations_group3("pl", _TERMS_U),
+                           "paraître": generate_terminations_group3.__func__("par", _TERMS_U),
+                           "plaire": generate_terminations_group3.__func__("pl", _TERMS_U),
                            "pleuvoir": [None, None, "plut", None, None, None],
-                           "pouvoir": generate_terminations_group3("p", _TERMS_U),
-                           "prendre": generate_terminations_group3("pr", _TERMS_I),
-                           "prévoir": generate_terminations_group3("prév", _TERMS_I),
+                           "pouvoir": generate_terminations_group3.__func__("p", _TERMS_U),
+                           "prendre": generate_terminations_group3.__func__("pr", _TERMS_I),
+                           "prévoir": generate_terminations_group3.__func__("prév", _TERMS_I),
                            "raire": [None, None, None, None, None, None],
-                           "rire": generate_terminations_group3("r", _TERMS_I),
-                           "rompre": generate_terminations_group3("romp", _TERMS_I),
-                           "savoir": generate_terminations_group3("s", _TERMS_U),
-                           "scrire": generate_terminations_group3("scriv", _TERMS_I),
+                           "rire": generate_terminations_group3.__func__("r", _TERMS_I),
+                           "rompre": generate_terminations_group3.__func__("romp", _TERMS_I),
+                           "savoir": generate_terminations_group3.__func__("s", _TERMS_U),
+                           "scrire": generate_terminations_group3.__func__("scriv", _TERMS_I),
                            "seoir": [None, None, None, None, None, None],
-                           "suivre": generate_terminations_group3("suiv", _TERMS_I),
-                           "soudre": generate_terminations_group3("sol", _TERMS_U),
-                           "souffre": generate_terminations_group3("souffr", _TERMS_I),
-                           "suffire": generate_terminations_group3("suff", _TERMS_I),
-                           "surseoir": generate_terminations_group3("surs", _TERMS_I),
-                           "taire": generate_terminations_group3("t", _TERMS_U),
-                           "tenir": generate_terminations_group3("t", _TERMS_IN),
-                           "uire": generate_terminations_group3("uis", _TERMS_I),
-                           "vaincre": generate_terminations_group3("vainqu", _TERMS_I),
-                           "valoir": generate_terminations_group3("val", _TERMS_U),
-                           "venir": generate_terminations_group3("v", _TERMS_IN),
-                           "vêtir": generate_terminations_group3("vêt", _TERMS_I),
-                           "vivre": generate_terminations_group3("véc", _TERMS_U),
-                           "voir": generate_terminations_group3("v", _TERMS_I),
-                           "vouloir": generate_terminations_group3("voul", _TERMS_U)}
+                           "suivre": generate_terminations_group3.__func__("suiv", _TERMS_I),
+                           "soudre": generate_terminations_group3.__func__("sol", _TERMS_U),
+                           "souffre": generate_terminations_group3.__func__("souffr", _TERMS_I),
+                           "suffire": generate_terminations_group3.__func__("suff", _TERMS_I),
+                           "surseoir": generate_terminations_group3.__func__("surs", _TERMS_I),
+                           "taire": generate_terminations_group3.__func__("t", _TERMS_U),
+                           "tenir": generate_terminations_group3.__func__("t", _TERMS_IN),
+                           "uire": generate_terminations_group3.__func__("uis", _TERMS_I),
+                           "vaincre": generate_terminations_group3.__func__("vainqu", _TERMS_I),
+                           "valoir": generate_terminations_group3.__func__("val", _TERMS_U),
+                           "venir": generate_terminations_group3.__func__("v", _TERMS_IN),
+                           "vêtir": generate_terminations_group3.__func__("vêt", _TERMS_I),
+                           "vivre": generate_terminations_group3.__func__("véc", _TERMS_U),
+                           "voir": generate_terminations_group3.__func__("v", _TERMS_I),
+                           "vouloir": generate_terminations_group3.__func__("voul", _TERMS_U)}
 
 
     terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
@@ -407,6 +451,7 @@ class ConditionnelPresent(Tense):
     terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
 
 
+
 def conjugate(verb, tense, interrogative=False):
     """
     Conjugue un verbe au temps demandé. Possibilité d'avoir la forme interrogative.
@@ -420,7 +465,11 @@ def conjugate(verb, tense, interrogative=False):
     interrogative : bool
         utiliser la forme interrogative ? False par défaut
     """
-    return tense.conjugate(verb, interrogative)
+
+    if interrogative:
+        return tense.conjugate_interrogative(verb)
+    else:
+        return tense.conjugate_simple(verb)
 
 
 
@@ -445,13 +494,8 @@ if __name__ == "__main__":
                 verb = line[:-1].lower()
 
                 for tense in tenses:
-                    for res in conjugate(verb, tenses[tense]):
-                        if res is not None:
-                            print(res)
-
-                    for res in conjugate(verb, tenses[tense], interrogative=None):
-                        if res is not None:
-                            print(res)
+                    for res in conjugate(verb, tenses[tense]) + conjugate(verb, tenses[tense], interrogative=True):
+                        print(res)
 
     # Verbe en entrée, tableau de conjugaison en sortie
     else:
@@ -459,13 +503,13 @@ if __name__ == "__main__":
         header = "|"
         output = ["|"] * 6
 
-        for tense in tenses:
-            header += f" {tense} |"
-            conjug = conjugate(verb, tenses[tense])
+        for tense_name, tense in tenses.items():
+            header += f" {tense_name} |"
+            conjug = conjugate(verb, tense)
 
-            for i, index in enumerate([0, 1, 2, 5, 6, 7]):
+            for i, pronoun in enumerate([0, 1, 2, 5, 6, 7]):
                 try:
-                    output[i] += f" {conjug[index]} |"
+                    output[i] += f" {conjug[pronoun]} |"
                 except IndexError:
                     output[i] += " |"
 
