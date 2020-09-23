@@ -5,24 +5,24 @@ import re
 
 class Tense:
     """Classe générique d'un temps"""
-    terminations = []
+    terminations = {}
     pronouns = ["je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles"]
 
 
     @classmethod
-    def conjugate(self, verb, interrogative=False):
+    def conjugate(cls, verb, interrogative=False):
         """
         Conjugue n'importe quel verbe dans ce temps.
         """
 
         # On trie les terminaisons par ordre décroissant de taille afin de matcher le plus
         # précisement possible
-        for suffix in sorted(self.terminations.keys(), key=lambda k: len(k), reverse=True):
+        for suffix in sorted(cls.terminations.keys(), key=lambda k: len(k), reverse=True):
             if verb.endswith(suffix):
                 radical = verb[:-len(suffix)]
-                terms = self.terminations[suffix]
+                terms = cls.terminations[suffix]
                 extended_terminations = terms[0:2] + [terms[2]] * 3 + terms[3:] + [terms[5]]
-                pronouns = list(self.pronouns)
+                pronouns = list(cls.pronouns)
 
                 # Forme interrogative
                 if interrogative:
@@ -38,7 +38,7 @@ class Tense:
                     # exemple: "pèlé-je" devient "pelé-je"
                     base_verbale = [f"{radical}{term}" if term is not None else None for term in extended_terminations]
                     if base_verbale[0]:
-                        base_verbale[0] = re.sub(r'è(.)é$', 'e\g<1>é', base_verbale[0])
+                        base_verbale[0] = re.sub(r'è(.)é$', r'e\g<1>é', base_verbale[0])
 
                     return([f"{verb}-{pronoun} ?" for pronoun, verb in zip(pronouns, base_verbale) if base_verbale is not None])
                 # Forme classique
@@ -49,14 +49,16 @@ class Tense:
                         pronouns[0] = "j'"
 
                     return [f"{pronoun}{radical}{term}" for pronoun, term in zip(pronouns, extended_terminations) if term is not None]
-        return [None]
+        return [None] * 9
 
 
 
 class IndicatifPresent(Tense):
     """Règles de conjugaison pour le présent de l'indicatif"""
 
+    @staticmethod
     def generate_eacute_terms():
+        """Générer les terminaisons pour les verbes avec un accent aigu"""
         result = {}
         # Terminaisons où "é" devient "è" pour les 3 premières personnes du singulier et la 3ème
         # du pluriel
@@ -68,7 +70,9 @@ class IndicatifPresent(Tense):
                            ["è" + term[1:-2] + t for t in ["ent"]]
         return result
 
-    def generate_exceptions():
+    @staticmethod
+    def generate_exceptions_group1():
+        """Génerer les terminaisons pour les exceptions du 1er groupe"""
         result = {}
 
         for term in ["celer", "ciseler", "démanteler", "écarteler", "encasteler", "geler",
@@ -106,14 +110,13 @@ class IndicatifPresent(Tense):
                            "aindre": ["ains", "ains", "aint", "aignons", "aignez", "aignent"],
                            "aller": ["vais", "vas", "va", "allons", "allez", "vont"],
                            "asseoir": ["assieds", "assieds", "assied", "asseyons", "asseyez", "asseyent"],
-                           "astreindre": ["astreins", "astreins", "astreint", "astreignons", "astreignez", "astraignent"],
                            "avoir": ["ai", "as", "a", "avons", "avez", "ont"],
                            "battre": ["bats", "bats", "bat", "battons", "battez", "battent"],
                            "boire": ["bois", "bois", "boit", "buvons", "buvez", "boivent"],
                            "bouillir": ["bous", "bous", "bout", "bouillons", "bouillez", "bouillent"],
                            "cevoir": ["çois", "çois", "çoit", "cevons", "cevez", "çoivent"],
                            "choir": ["chois", "chois", "choit", "choyons", "choyez", "choient"],
-                           "circoncire": ["circoncis", "circoncis", "circoncit", "circoncisons", "circoncisez", "circoncisent"],
+                           "concire": ["concis", "concis", "concit", "concisons", "concisez", "concisent"],
                            "clore": ["clos", "clos", "clôt", None, None, "closent"],
                            "clure": ["clus", "clus", "clut", "cluons", "cluez", "cluent"],
                            "confire": ["confis", "confis", "confit", "confisons", "confisez", "confisent"],
@@ -127,7 +130,7 @@ class IndicatifPresent(Tense):
                            "dormir": ["dors", "dors", "dort", "dormons", "dormez", "dorment"],
                            "écrire": ["écris", "écris", "écrit", "écrivons", "écrivez", "écrivent"],
                            "eindre": ["eins", "eins", "eint", "eignons", "eignez", "eignent"],
-                           "épandre": ["épands","épands", "épand", "épandons", "épandez", "épandent"],
+                           "épandre": ["épands", "épands", "épand", "épandons", "épandez", "épandent"],
                            "être": ["suis", "es", "est", "sommes", "êtes", "sont"],
                            "faire": ["fais", "fais", "fait", "faisons", "faites", "font"],
                            "falloir": [None, None, "faut", None, None, None],
@@ -195,8 +198,8 @@ class IndicatifPresent(Tense):
                            "vouloir": ["veux", "veux", "veut", "voulons", "voulez", "veulent"]}
 
 
-    terminations_group1.update(generate_eacute_terms())
-    terminations_group1.update(generate_exceptions())
+    terminations_group1.update(generate_eacute_terms.__func__())
+    terminations_group1.update(generate_exceptions_group1.__func__())
 
     terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
 
@@ -205,7 +208,9 @@ class IndicatifFutur(Tense):
     """
     Futur de l'indicatif
     """
-    def generate_exceptions():
+
+    @staticmethod
+    def generate_exceptions_group1():
         result = {}
 
         for term in ["celer", "ciseler", "démanteler", "écarteler", "encasteler", "geler",
@@ -218,11 +223,12 @@ class IndicatifFutur(Tense):
 
     terminations_group1 = {"yer": ["ierai", "ieras", "iera", "yerons", "yerez", "ieront"],
                            "er": ["erai", "eras", "era", "erons", "erez", "eront"],
-                           "appeler": ["appellerai", "appelleras", "appellera", "appellerons", "appellerez", "appelleront"],
+                           "appeler": ["appellerai", "appelleras", "appellera",
+                                       "appellerons", "appellerez", "appelleront"],
                            "eler": ["ellerai", "elleras", "ellera", "elleront", "ellerez", "elleront"],
                            "eter": ["etterai", "etteras", "ettera", "etteront", "etterez", "etteront"]}
 
-    terminations_group1.update(generate_exceptions())
+    terminations_group1.update(generate_exceptions_group1.__func__())
 
     terminations_group2 = {"ir": ["irai", "iras", "ira", "irons", "irez", "iront"],
                            "ïr": ["ïrai", "ïras", "ïra", "ïrons", "ïrez", "ïront"]}
@@ -237,7 +243,8 @@ class IndicatifFutur(Tense):
                            "asseoir": ["assoirai", "assoiras", "assoira", "assoirons", "assoirez", "assoiront"],
                            "cevoir": ["cevrai", "cevras", "cevra", "cevrons", "cevrez", "cevront"],
                            "courir": ["courrai", "courras", "courra", "courrons", "courrez", "courront"],
-                           "cueillir": ["cueillerai", "cueilleras", "cueillera", "cueillerons", "cueillerez", "cueilleront"],
+                           "cueillir": ["cueillerai", "cueilleras", "cueillera",
+                                        "cueillerons", "cueillerez", "cueilleront"],
                            "devoir": ["devrai", "devras", "devra", "devrons", "devrez", "devront"],
                            "faire": ["ferais", "feras", "fera", "ferons", "ferez", "feront"],
                            "falloir": [None, None, "faudra", None, None, None],
@@ -265,7 +272,8 @@ class IndicatifImparfait(Tense):
     Imparfait de l'indicatif
     """
 
-    def generate_group3():
+    @staticmethod
+    def generate_terminations_group3():
         """
         Génère automatiquement les terminaisons de l'imparfait des verbes du 3ème groupe à partir
         de la conjugaison au présent pour la première personne du pluriel.
@@ -291,9 +299,10 @@ class IndicatifImparfait(Tense):
     terminations_group2 = {"ir": ["issais", "issais", "issait", "issions", "issiez", "issaient"],
                            "ïr": ["ïssais", "ïssais", "ïssait", "ïssions", "ïssiez", "ïssaient"]}
 
-    terminations_group3 = generate_group3()
+    terminations_group3 = generate_terminations_group3.__func__()
     terminations_group3.update({"être": ["étais", "étais", "était", "étions", "étiez", "étaient"],
                                 "falloir": [None, None, "fallait", None, None, None],
+                                "frire": [None, None, None, None, None, None],
                                 "pleuvoir": [None, None, "pleuvait", None, None, "pleuvaient"],
                                 "seoir": [None, None, "seyait", None, None, "seyaient"]})
 
@@ -305,17 +314,90 @@ class IndicatifPasseSimple(Tense):
     Passé simple
     """
 
-    terminations_group1 = {"er": ["ai", "ais", "a", "âmes", "âtes", "èrent"],
+    def generate_terminations_group3(radical, terms):
+        return [radical + term for term in terms]
+
+    terminations_group1 = {"er": ["ai", "as", "a", "âmes", "âtes", "èrent"],
                            "ger": ["geai", "geais", "gea", "geâmes", "geâtes", "gèrent"]}
     terminations_group2 = {"ir": ["is", "is", "it", "îmes", "îtes", "irent"],
                            "ïr": ["ïs", "ïs", "ït", "ïmes", "ïtes", "ïrent"]}
+
+
+    _TERMS_A = ["ai", "as", "a", "âmes", "âtes", "èrent"]
+    _TERMS_U = ["us", "us", "ut", "ûmes", "ûtes", "urent"]
+    _TERMS_I = ["is", "is", "it", "îmes", "îtes", "irent"]
+    _TERMS_IN = ["ins", "ins", "int", "înmes", "întes", "inrent"]
+
     terminations_group3 = {"avoir": ["eus", "eus", "eut", "eûmes", "eûtes", "eurent"],
-                           "être": ["fus", "fus", "fut", "fûmes", "fûtes", "furent"]}
+                           "être": ["fus", "fus", "fut", "fûmes", "fûtes", "furent"],
+                           "aller": generate_terminations_group3("all", _TERMS_A),
+                           "asseoir": generate_terminations_group3("ass", _TERMS_I),
+                           "battre": generate_terminations_group3("batt", _TERMS_I),
+                           "boire": generate_terminations_group3("b", _TERMS_U),
+                           "cevoir": generate_terminations_group3("ç", _TERMS_U),
+                           "choir": generate_terminations_group3("ch", _TERMS_U),
+                           "concire": generate_terminations_group3("conc", _TERMS_I),
+                           "clore": [None, None, None, None, None, None],
+                           "clure": generate_terminations_group3("cl", _TERMS_U),
+                           "confire": generate_terminations_group3("conf", _TERMS_I),
+                           "coudre": generate_terminations_group3("cous", _TERMS_I),
+                           "courir": generate_terminations_group3("cour", _TERMS_U),
+                           "croire": generate_terminations_group3("cr", _TERMS_U),
+                           "croître": ["crûs", "crûs", "crût", "crûmes", "crûtes", "crûrent"],
+                           "devoir": generate_terminations_group3("d", _TERMS_U),
+                           "dre": generate_terminations_group3("d", _TERMS_I),
+                           "écrire": generate_terminations_group3("écriv", _TERMS_I),
+                           "faire": generate_terminations_group3("f", _TERMS_I),
+                           "falloir": [None, None, "fallut", None, None, None],
+                           "foutre": generate_terminations_group3("fout", _TERMS_I),
+                           "frire": ["fris", "fris", "frit", None, None, None],
+                           "gésir": [None, None, None, None, None, None],
+                           "indre": generate_terminations_group3("ign", _TERMS_I),
+                           "lire": generate_terminations_group3("l", _TERMS_U),
+                           "mettre": generate_terminations_group3("m", _TERMS_I),
+                           "moudre": generate_terminations_group3("moul", _TERMS_U),
+                           "mouvoir": generate_terminations_group3("m", _TERMS_U),
+                           "naître": generate_terminations_group3("naqu", _TERMS_I),
+                           "oindre": generate_terminations_group3("oign", _TERMS_I),
+                           "ouïr": [None, None, None, None, None, None],
+                           "paître": [None, None, None, None, None, None],
+                           "paraître": generate_terminations_group3("par", _TERMS_U),
+                           "plaire": generate_terminations_group3("pl", _TERMS_U),
+                           "pleuvoir": [None, None, "plut", None, None, None],
+                           "pouvoir": generate_terminations_group3("p", _TERMS_U),
+                           "prendre": generate_terminations_group3("pr", _TERMS_I),
+                           "prévoir": generate_terminations_group3("prév", _TERMS_I),
+                           "raire": [None, None, None, None, None, None],
+                           "rire": generate_terminations_group3("r", _TERMS_I),
+                           "rompre": generate_terminations_group3("romp", _TERMS_I),
+                           "savoir": generate_terminations_group3("s", _TERMS_U),
+                           "scrire": generate_terminations_group3("scriv", _TERMS_I),
+                           "seoir": [None, None, None, None, None, None],
+                           "suivre": generate_terminations_group3("suiv", _TERMS_I),
+                           "soudre": generate_terminations_group3("sol", _TERMS_U),
+                           "souffre": generate_terminations_group3("souffr", _TERMS_I),
+                           "suffire": generate_terminations_group3("suff", _TERMS_I),
+                           "surseoir": generate_terminations_group3("surs", _TERMS_I),
+                           "taire": generate_terminations_group3("t", _TERMS_U),
+                           "tenir": generate_terminations_group3("t", _TERMS_IN),
+                           "uire": generate_terminations_group3("uis", _TERMS_I),
+                           "vaincre": generate_terminations_group3("vainqu", _TERMS_I),
+                           "valoir": generate_terminations_group3("val", _TERMS_U),
+                           "venir": generate_terminations_group3("v", _TERMS_IN),
+                           "vêtir": generate_terminations_group3("vêt", _TERMS_I),
+                           "vivre": generate_terminations_group3("véc", _TERMS_U),
+                           "voir": generate_terminations_group3("v", _TERMS_I),
+                           "vouloir": generate_terminations_group3("voul", _TERMS_U)}
+
 
     terminations = {**terminations_group1, **terminations_group2, **terminations_group3}
 
 
 class ConditionnelPresent(Tense):
+    """
+    Conditionnel présent
+    """
+
     terminations_group1 = {"er": ["erais", "erais", "erait", "erions", "eriez", "eraient"]}
     terminations_group2 = {"ir": ["irais", "irais", "irait", "irions", "iriez", "iraient"],
                            "ïr": ["ïrais", "ïrais", "ïrait", "ïrions", "ïriez", "ïraient"]}
@@ -352,8 +434,8 @@ if __name__ == "__main__":
     tenses = {"Présent": IndicatifPresent,
               "Imparfait": IndicatifImparfait,
               "Futur": IndicatifFutur,
-              "Passé simple": IndicatifPasseSimple,
-              "Conditionnel": ConditionnelPresent}
+              "Passé simple": IndicatifPasseSimple}
+#              "Conditionnel": ConditionnelPresent}
 
 
     # Fichier en entrée, dictionnaire en sortie
@@ -363,28 +445,32 @@ if __name__ == "__main__":
                 verb = line[:-1].lower()
 
                 for tense in tenses:
-                    [print(result) for result in conjugate(verb, tenses[tense]) if result is not None]
-                    [print(result) for result in conjugate(verb, tenses[tense], interrogative=True) if result is not None]
+                    for res in conjugate(verb, tenses[tense]):
+                        if res is not None:
+                            print(res)
+
+                    for res in conjugate(verb, tenses[tense], interrogative=None):
+                        if res is not None:
+                            print(res)
+
     # Verbe en entrée, tableau de conjugaison en sortie
     else:
         verb = arg1
         header = "|"
-        delim = "| --- " * len(tenses) + "|"
         output = ["|"] * 6
 
         for tense in tenses:
             header += f" {tense} |"
-            conjug = [result for result in conjugate(verb, tenses[tense])]
+            conjug = conjugate(verb, tenses[tense])
 
             for i, index in enumerate([0, 1, 2, 5, 6, 7]):
                 try:
                     output[i] += f" {conjug[index]} |"
-                except:
+                except IndexError:
                     output[i] += " |"
 
         print(header)
-        print(delim)
+        print("| --- " * len(tenses) + "|")
 
         for line in output:
             print(line)
-
