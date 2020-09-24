@@ -15,13 +15,19 @@ class Tense:
                 "3pp": ["ils", "elles"]}
 
     @classmethod
-    def _conjugate(cls, verb):
+    def conjugate(cls, verb, interrogative=True):
         """
         Conjugue n'importe quel verbe dans ce temps.
         Retourne un dicitonnaire avec seulement le verbe conjugué
         """
 
-        result = dict.fromkeys(cls.PRONOUNS.keys())
+        # Initialisation du résultat sous forme de dictionnaire de dictionnaire
+        # Le résultat est de type {"1ps": {"je": "je mange"}, "2ps": {"tu": "tu manges"}, ...}
+        result = dict()
+        for person, pronouns in cls.PRONOUNS.items():
+            result[person] = {}
+            for pronoun in pronouns:
+                result[person][pronoun] = None
 
         # On trie les terminaisons par ordre décroissant de taille afin de matcher le plus
         # précisement possible
@@ -29,66 +35,41 @@ class Tense:
             if verb.endswith(suffix):
                 radical = verb[:-len(suffix)]
 
-                for pronoun, term in zip(cls.PRONOUNS.keys(), cls.terminations[suffix]):
+                for person, term in zip(cls.PRONOUNS.keys(), cls.terminations[suffix]):
                     if term is not None:
-                        result[pronoun] = radical + term
+                        for pronoun in cls.PRONOUNS[person]:
+                            if interrogative:
+                                result[person][pronoun] = cls._get_interrogative_form(radical + term, pronoun, person)
+                            else:
+                                result[person][pronoun] = cls._get_simple_form(radical + term, pronoun, person)
 
                 break
 
         return result
 
     @classmethod
-    def conjugate_interrogative(cls, verb):
-        """
-        Conjugue un verbe à la forme interrogative
-        """
+    def _get_interrogative_form(cls, verb, pronoun, person):
+        if person == "1ps":
+            # On remplace .....e-je par .....é-je (exemple: demande-je devient demandé-je)
+            if verb.endswith("e"):
+                verb = verb[:-1] + "é"
 
-        conjug = cls._conjugate(verb)
-        result = []
+            # Remplacement des terminaisons "è.é-je" par "e.é-je"
+            # exemple: "pèlé-je" devient "pelé-je"
+            verb = re.sub(r'è(.)é$', r'e\g<1>é', verb)
 
-        for elem in cls.PRONOUNS:
-            if conjug[elem] is None:
-                continue
+        # Ajout de '-t-' avec il/elle et ils/elles si voyelle en fin de verbe
+        if person in ["3ps", "3pp"] and verb.endswith("aeiou"):
+            verb = verb + "-t"
 
-            if elem == "1ps":
-                # On remplace .....e-je par .....é-je (exemple: demande-je devient demandé-je)
-                if conjug[elem].endswith("e"):
-                    conjug[elem] = conjug[elem][:-1] + "é"
-
-                # Remplacement des terminaisons "è.é-je" par "e.é-je"
-                # exemple: "pèlé-je" devient "pelé-je"
-                conjug[elem] = re.sub(r'è(.)é$', r'e\g<1>é', conjug[elem])
-
-            # Ajout de '-t-' avec il/elle et ils/elles si voyelle en fin de verbe
-            if elem in ["3ps", "3pp"] and conjug[elem].endswith("aeiou"):
-                conjug[elem] = conjug[elem] + "-t"
-
-            for pronoun in cls.PRONOUNS[elem]:
-                result.append(f"{conjug[elem]}-{pronoun} ?")
-
-        return result
+        return f"{verb}-{pronoun} ?"
 
     @classmethod
-    def conjugate_simple(cls, verb):
-        """
-        Conjugue un verbe et retourne une liste de pronom + verbe conjugué
-        """
-        conjug = cls._conjugate(verb)
-        result = []
-
-        for elem in cls.PRONOUNS:
-            if conjug[elem] is None:
-                continue
-
-            for pronoun in cls.PRONOUNS[elem]:
-                sep_char = " "
-                # "j'" si le verbe commence par une voyelle
-                if pronoun == "je" and conjug[elem].startswith(tuple("aeéèêiou")):
-                    pronoun = "j'"
-                    sep_char = ""
-
-                result.append(f"{pronoun}{sep_char}{conjug[elem]}")
-        return result
+    def _get_simple_form(cls, verb, pronoun, person):
+        # "j'" si le verbe commence par une voyelle
+        if pronoun == "je" and verb.startswith(tuple("aeéèêiou")):
+            return f"j'{verb}"
+        return f"{pronoun} {verb}"
 
 
 class IndicatifPresent(Tense):
@@ -465,11 +446,7 @@ def conjugate(verb, tense, interrogative=False):
     interrogative : bool
         utiliser la forme interrogative ? False par défaut
     """
-
-    if interrogative:
-        return tense.conjugate_interrogative(verb)
-    else:
-        return tense.conjugate_simple(verb)
+    return tense.conjugate(verb, interrogative)
 
 
 if __name__ == "__main__":
@@ -484,15 +461,24 @@ if __name__ == "__main__":
               "Passé simple": IndicatifPasseSimple,
               "Conditionnel": ConditionnelPresent}
 
-    # Fichier en entrée, dictionnaire en sortie
+    # Fichier en entrée liste en sortie
     if os.path.isfile(arg1):
         with open(arg1) as fh:
             for line in fh:
                 verb = line[:-1].lower()
 
                 for tense in tenses:
-                    for res in conjugate(verb, tenses[tense]) + conjugate(verb, tenses[tense], interrogative=True):
-                        print(res)
+                    conjug = conjugate(verb, tenses[tense])
+                    for person in conjug:
+                        for pronoun in conjug[person]:
+                            if conjug[person][pronoun] is not None:
+                                print(conjug[person][pronoun])
+
+                    conjug = conjugate(verb, tenses[tense], interrogative=True)
+                    for person in conjug:
+                        for pronoun in conjug[person]:
+                            if conjug[person][pronoun] is not None:
+                                print(conjug[person][pronoun])
 
     # Verbe en entrée, tableau de conjugaison en sortie
     else:
@@ -504,11 +490,13 @@ if __name__ == "__main__":
             header += f" {tense_name:20} |"
             conjug = conjugate(verb, tense)
 
-            for i, pronoun in enumerate([0, 1, 2, 5, 6, 7]):
-                try:
-                    output[i] += f" {conjug[pronoun]:20} |"
-                except IndexError:
-                    output[i] += " |"
+            for i, person in enumerate(conjug):
+                for result in conjug[person].values():
+                    if result:
+                        output[i] += f" {result:20} |"
+                    else:
+                        output[i] += " " * 20 + "  |"
+                    break
 
         print(header)
         print(("| " + "-" * 20 + " ") * len(tenses) + "|")
