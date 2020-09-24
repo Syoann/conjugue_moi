@@ -417,7 +417,7 @@ class ConditionnelPresent(Tense):
         """
         terminations_conditionnel = {}
 
-        # Récupération des terminaisons du présent de l'indicatif
+        # Récupération des terminaisons du futur de l'indicatif
         for term, conjug in IndicatifFutur.terminations.items():
             if conjug[3] is None:
                 continue
@@ -431,6 +431,52 @@ class ConditionnelPresent(Tense):
         return terminations_conditionnel
 
     terminations = generate_terminations.__func__()
+
+class Imperatif(Tense):
+    """
+    Impératif
+    """
+
+    PRONOUNS = {"2ps": [""],
+                "1pp": [""],
+                "2pp": [""]}
+
+
+    @staticmethod
+    def generate_terminations():
+        """
+        Génère automatiquement les terminaisons de l'impératif à partir de la conjugaison au présent
+        """
+        terminations_imperatif = {}
+
+        # Récupération des terminaisons du présent de l'indicatif
+        for term, conjug in IndicatifPresent.terminations.items():
+            if conjug[3] is None:
+                continue
+
+            # Génération des terminaisons
+            terminations_imperatif[term] = [conjug[0], conjug[3], conjug[4]]
+
+        return terminations_imperatif
+
+    terminations = generate_terminations.__func__()
+    terminations.update({"avoir": ["aie", "ayons", "ayez"],
+                         "être": ["sois", "soyons", "soyez"],
+                         "aller": ["va", "allons", "allez"],
+                         "savoir": ["sache", "sachons", "sachez"],
+                         "vouloir": ["veux", "voulons", "voulez"],
+                         "pouvoir": [None, None, None]})
+
+
+    @classmethod
+    def _get_interrogative_form(cls, verb, pronoun, person):
+        return None
+
+    @classmethod
+    def _get_simple_form(cls, verb, pronoun, person):
+        return f"{verb} !"
+
+
 
 
 def conjugate(verb, tense, interrogative=False):
@@ -459,7 +505,8 @@ if __name__ == "__main__":
               "Imparfait": IndicatifImparfait,
               "Futur": IndicatifFutur,
               "Passé simple": IndicatifPasseSimple,
-              "Conditionnel": ConditionnelPresent}
+              "Conditionnel": ConditionnelPresent,
+              "Impératif": Imperatif}
 
     # Fichier en entrée liste en sortie
     if os.path.isfile(arg1):
@@ -490,13 +537,16 @@ if __name__ == "__main__":
             header += f" {tense_name:20} |"
             conjug = conjugate(verb, tense)
 
-            for i, person in enumerate(conjug):
-                for result in conjug[person].values():
-                    if result:
-                        output[i] += f" {result:20} |"
-                    else:
-                        output[i] += " " * 20 + "  |"
-                    break
+            for i, person in enumerate(["1ps", "2ps", "3ps", "1pp", "2pp", "3pp"]):
+                try:
+                    for result in conjug[person].values():
+                        if result:
+                            output[i] += f" {result:20} |"
+                        else:
+                            output[i] += " " * 20 + "  |"
+                        break
+                except:
+                    output[i] += " " * 20 + "  |"
 
         print(header)
         print(("| " + "-" * 20 + " ") * len(tenses) + "|")

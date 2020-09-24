@@ -20,16 +20,19 @@ python3 conjugue_moi.py verbes.list > verbes.dic
 ```
 
 ```
-head -6 verbes.dic
+head -9 verbes.dic
 ```
 
 ```
 je mange
 tu manges
 il mange
+elle mange
+on mange
 nous mangeons
 vous mangez
 ils mangent
+elles mangent
 ```
 
 
@@ -79,11 +82,3 @@ python3 conjugue_moi.py tramontir
 | nous tramontissons   | nous tramontissions  | nous tramontirons    | nous tramontîmes     |
 | vous tramontissez    | vous tramontissiez   | vous tramontirez     | vous tramontîtes     |
 | ils tramontissent    | ils tramontissaient  | ils tramontiront     | ils tramontirent     |
-
-
-
-## A faire
-
-- terminer la conjugaison des verbes du 3ème groupe
-- gérer les verbes pronominaux
-- ajouter l'impératif
